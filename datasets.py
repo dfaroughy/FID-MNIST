@@ -28,7 +28,6 @@ def load_blurred_pepper_mnist(threshold=0.5, train=True, kernel_size=7, sigma=0.
                                     ])
     return datasets.MNIST(root='./data', train=train, download=True, transform=transform)
 
-
 def load_swirled_pepper_mnist(threshold=0.5, train=True, strength=1, radius=20):
     """Load MNIST dataset with swirl distortion and binarization."""
     transform = transforms.Compose([
@@ -39,12 +38,10 @@ def load_swirled_pepper_mnist(threshold=0.5, train=True, strength=1, radius=20):
     ])
     return datasets.MNIST(root='./data', train=train, download=True, transform=transform)
 
-
 def add_gaussian_noise(tensor, mean=0., std=1.):
     """Adds Gaussian noise to a tensor."""
     noise = torch.randn(tensor.size()) * std + mean
     return tensor + noise
-
 
 def apply_swirl(image, strength=1, radius=10):
     """Apply swirl distortion to an image."""
