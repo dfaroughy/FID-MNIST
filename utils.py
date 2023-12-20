@@ -39,32 +39,24 @@ def train_classifier(model,
     torch.save(model.state_dict(), save_as)
 
 
-
 @torch.no_grad()
-def get_model_accuracy(model, device, test_loader):
+def get_model_accuracy(model, device, test_dataloader):
     model.to(device)
     model.eval()
     test_loss = 0
     correct = 0
-    all_preds = []
-    all_targets = []
     with torch.no_grad():
-        for data, target in test_loader:
+        for data, target in test_dataloader:
             data, target = data.to(device), target.to(device)
             output = model(data)
             test_loss += F.cross_entropy(output, target, reduction='sum').item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
-            # all_preds.extend(pred.view(-1).cpu().numpy())
-            # all_targets.extend(target.view(-1).cpu().numpy())
 
-    test_loss /= len(test_loader.dataset)
-    accuracy = 100. * correct / len(test_loader.dataset)
-    # print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(test_loss, correct, len(test_loader.dataset), accuracy))
+    test_loss /= len(test_dataloader.dataset)
+    accuracy = 100. * correct / len(test_dataloader.dataset)
     return accuracy
-    # # Confusion Matrix
-    # conf_matrix = confusion_matrix(all_targets, all_preds)
-    # print("Confusion Matrix:\n", conf_matrix)
+
 
 
 def plot_images(images, title,  cmap="gray", figsize=(4, 4)):
