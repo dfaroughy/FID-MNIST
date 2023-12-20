@@ -8,8 +8,6 @@ def load_nist_data(name='MNIST', train=True, binerize=True, distortion=None, lev
     
     transformation_list=[]
     
-    # assert bool(level) == bool(distortion), "Please specify a distortion level for image"
-
     #...define 1-parametric distortions:
 
     if distortion == 'noise': 

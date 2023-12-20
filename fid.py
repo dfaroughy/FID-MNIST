@@ -56,7 +56,6 @@ def distorted_NIST_fid(model,
     fid = {}
 
     for val in values:
-
         dataset = load_nist_data(name=name, distortion=distortion, level=val, train=False)
         fid[val] = compute_fid(model, dataset, mu_ref=mu, sigma_ref=sigma, batch_size=batch_size, extract_feature_layer=layer)
     
