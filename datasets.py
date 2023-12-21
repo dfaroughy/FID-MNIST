@@ -80,28 +80,22 @@ def load_nist_data(name='MNIST', train=True, distortion=None, level=None):
         return datasets.ImageNet(root='./data', split='train', download=True, transform=transforms.Compose(transformation_list))
     
     elif name in ('EMNIST Balanced', 'BinaryEMNIST Balanced'):
-        transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='balanced', train=train, download=True, transform=transforms.Compose(transformation_list))
+        return datasets.EMNIST(root='./data', split='balanced', train=train, download=True, transform=transforms.Compose([CorrectEMNISTOrientation(), transforms.Compose(transformation_list)]))
     
     elif name in ('EMNIST Byclass', 'BinaryEMNIST Byclass'):
-        transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='byclass', train=train, download=True, transform=transforms.Compose(transformation_list)) 
+        return datasets.EMNIST(root='./data', split='byclass', train=train, download=True, transform=transforms.Compose([CorrectEMNISTOrientation(), transforms.Compose(transformation_list)])) 
     
     elif name in ('EMNIST Bymerge', 'BinaryEMNIST Bymerge'):
-        transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='bymerge', train=train, download=True, transform=transforms.Compose(transformation_list))
+        return datasets.EMNIST(root='./data', split='bymerge', train=train, download=True, transform=transforms.Compose([CorrectEMNISTOrientation(), transforms.Compose(transformation_list)]))
     
     elif name in ('EMNIST Digits', 'BinaryEMNIST Digits'):
-        transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='digits', train=train, download=True, transform=transforms.Compose(transformation_list))
+        return datasets.EMNIST(root='./data', split='digits', train=train, download=True, transform=transforms.Compose([CorrectEMNISTOrientation(), transforms.Compose(transformation_list)]))
     
     elif name in ('EMNIST Letters', 'BinaryEMNIST Letters'):
-        transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='letters', train=train, download=True, transform=transforms.Compose(transformation_list))
+        return datasets.EMNIST(root='./data', split='letters', train=train, download=True, transform=transforms.Compose([CorrectEMNISTOrientation(), transforms.Compose(transformation_list)]))
     
     elif name in ('EMNIST mnist', 'BinaryEMNIST mnist'):
-        transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='mnist', train=train, download=True, transform=transforms.Compose(transformation_list))
+        return datasets.EMNIST(root='./data', split='mnist', train=train, download=True, transform=transforms.Compose([CorrectEMNISTOrientation(), transforms.Compose(transformation_list)]))
     
     elif name in ('QMNIST', 'BinaryQMNIST'):
         return datasets.QMNIST(root='./data', what='train', download=True, transform=transforms.Compose(transformation_list))

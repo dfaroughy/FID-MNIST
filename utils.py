@@ -13,13 +13,15 @@ def train_classifier(model,
                      save_as='model.pth', 
                      epochs=10, 
                      lr=0.001):
-
+    
+    model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.CrossEntropyLoss()
 
     for epoch in tqdm.tqdm(range(1, epochs), desc="Epochs"):
 
         for (data, target) in train_dataloader:
+            data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
             output = model(data)
             loss = loss_fn(output, target)
@@ -41,7 +43,7 @@ def train_classifier(model,
 
 @torch.no_grad()
 def get_model_accuracy(model, device, test_dataloader):
-    model.to(device)
+    # model.to(device)
     model.eval()
     test_loss = 0
     correct = 0
