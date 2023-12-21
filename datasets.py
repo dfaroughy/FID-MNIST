@@ -4,8 +4,24 @@ from PIL import Image
 from torchvision import datasets, transforms
 from skimage.transform import swirl
 
-def load_nist_data(name='MNIST', train=True, binerize=True, distortion=None, level=None):
+def load_nist_data(name='MNIST', train=True, distortion=None, level=None):
     
+    nist_datasets = ('MNIST', 'CIFAR10', 'CelebA', 'ImagNet', 'EMNIST Balanced', 'EMNIST Byclass', 'EMNIST Bymerge', 
+                     'EMNIST Digits', 'EMNIST Letters', 'EMNIST mnist', 'QMNIST', 'KMNIST', 'FashionMNIST', 'USPS', 'SVHN', 'Omniglot',
+                     'BinaryMNIST', 'BinaryCIFAR10', 'BinaryCelebA', 'BinaryImagNet', 'BinaryEMNIST Balanced', 'BinaryEMNIST Byclass', 
+                     'BinaryEMNIST Bymerge', 'BinaryEMNIST Digits', 'BinaryEMNIST Letters', 'BinaryEMNIST mnist', 'BinaryQMNIST', 
+                     'BinaryKMNIST', 'BinaryFashionMNIST', 'BinaryUSPS', 'BinarySVHN', 'BinaryOmniglot')
+
+    assert name in nist_datasets, 'Dataset name not recognized. Choose between {}'.format(*nist_datasets)
+
+    binerize_data = False
+    if "Binary" in name: 
+        binerize_data = True
+        binary_threshold = {'BinaryMNIST': 0.5, 'BinaryFashionMNIST': 0.75, 'BinaryCIFAR10': 0.75, 'BinaryCelebA': 0.5, 'BinaryImagNet': 0.5, 
+                            'BinaryEMNIST Balanced': 0.5, 'BinaryEMNIST Byclass': 0.5, 'BinaryEMNIST Bymerge': 0.5, 'BinaryEMNIST Digits': 0.5, 
+                            'BinaryEMNIST Letters': 0.5, 'BinaryEMNIST mnist': 0.5, 'BinaryQMNIST': 0.5, 'BinaryKMNIST': 0.5, 'BinaryUSPS': 0.5, 
+                            'BinarySVHN': 0.5, 'BinaryOmniglot': 0.5}
+
     transformation_list=[]
     
     #...define 1-parametric distortions:
@@ -13,69 +29,97 @@ def load_nist_data(name='MNIST', train=True, binerize=True, distortion=None, lev
     if distortion == 'noise': 
         transformation_list.append(transforms.ToTensor())
         transformation_list.append(transforms.Lambda(lambda x: add_gaussian_noise(x,  mean=0., std=level)))
-        if binerize: transformation_list.append(transforms.Lambda(lambda x: (x > 0.5).type(torch.float32)))
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x >  binary_threshold[name]).type(torch.float32)))
+    
     elif distortion == 'blur':  
         transformation_list.append(transforms.ToTensor())
         transformation_list.append(transforms.GaussianBlur(kernel_size=7, sigma=level))
-        if binerize: transformation_list.append(transforms.Lambda(lambda x: (x > 0.5).type(torch.float32)))
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
+    
     elif distortion == 'swirl': 
         transformation_list.append(transforms.Lambda(lambda x: apply_swirl(x, strength=level, radius=20)))
         transformation_list.append(transforms.ToTensor())
-        if binerize: transformation_list.append(transforms.Lambda(lambda x: (x > 0.5).type(torch.float32)))
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
+    
     elif distortion == 'pixelize': 
         transformation_list.append(transforms.Lambda(lambda x: apply_coarse_grain(x, p=level)))
         transformation_list.append(transforms.ToTensor())
-        if binerize: transformation_list.append(transforms.Lambda(lambda x: (x > 0.5).type(torch.float32)))
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
+    
     elif distortion == 'crop': 
         transformation_list.append(transforms.Lambda(lambda x: apply_mask(x, p=level)))
         transformation_list.append(transforms.ToTensor())
-        if binerize: transformation_list.append(transforms.Lambda(lambda x: (x > 0.5).type(torch.float32)))
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
+    
     elif distortion == 'binerize': 
         transformation_list.append(transforms.ToTensor())
         transformation_list.append(transforms.Lambda(lambda x: (x > level).type(torch.float32)))
-    elif distortion is None:
+        
+    else:
         transformation_list.append(transforms.ToTensor())
-        if binerize: transformation_list.append(transforms.Lambda(lambda x: (x > 0.5).type(torch.float32)))
-    else: raise ValueError("Distortion type not recognized. Use 'binerize', 'noise', 'blur', 'pixelize', 'swirl', 'crop' or None")
-
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
+    
     #...load dataset:
         
-    transform = transforms.Compose(transformation_list)
-
-    if name == 'MNIST':
-        return datasets.MNIST(root='./data', train=train, download=True, transform=transform) 
-    elif name == 'EMNIST Balanced':
+    if name == 'MNIST' or name == 'BinaryMNIST':
+        return datasets.MNIST(root='./data', train=train, download=True, transform=transforms.Compose(transformation_list)) 
+    
+    elif name in ('CIFAR10', 'BinaryCIFAR10'):
+        return datasets.CIFAR10(root='./data', train=train, download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in  ('CelebA', 'BinaryCelebA'):
+        return datasets.CelebA(root='./data', split='train', download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in ('ImageNet', 'BinaryImageNet'):
+        return datasets.ImageNet(root='./data', split='train', download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in ('EMNIST Balanced', 'BinaryEMNIST Balanced'):
         transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='balanced', train=train, download=True, transform=transform)
-    elif name == 'EMNIST Byclass':
+        return datasets.EMNIST(root='./data', split='balanced', train=train, download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in ('EMNIST Byclass', 'BinaryEMNIST Byclass'):
         transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='byclass', train=train, download=True, transform=transform) 
-    elif name == 'EMNIST Bymerge':
+        return datasets.EMNIST(root='./data', split='byclass', train=train, download=True, transform=transforms.Compose(transformation_list)) 
+    
+    elif name in ('EMNIST Bymerge', 'BinaryEMNIST Bymerge'):
         transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='bymerge', train=train, download=True, transform=transform)
-    elif name == 'EMNIST Digits':
+        return datasets.EMNIST(root='./data', split='bymerge', train=train, download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in ('EMNIST Digits', 'BinaryEMNIST Digits'):
         transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='digits', train=train, download=True, transform=transform)
-    elif name == 'EMNIST Letters':
+        return datasets.EMNIST(root='./data', split='digits', train=train, download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in ('EMNIST Letters', 'BinaryEMNIST Letters'):
         transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='letters', train=train, download=True, transform=transform)
-    elif name == 'EMNIST Mnist':
+        return datasets.EMNIST(root='./data', split='letters', train=train, download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in ('EMNIST mnist', 'BinaryEMNIST mnist'):
         transform = transforms.Compose([CorrectEMNISTOrientation(), transform])
-        return datasets.EMNIST(root='./data', split='mnist', train=train, download=True, transform=transform)
-    elif name == 'QMNIST':
-        return datasets.QMNIST(root='./data', what='train', download=True, transform=transform)
-    elif name == 'KMNIST':
-        return datasets.KMNIST(root='./data', train=train, download=True, transform=transform)
-    elif name == 'FashionMNIST':
-        return datasets.FashionMNIST(root='./data', train=train, download=True, transform=transform)     
-    elif name == 'USPS':
-        return datasets.USPS(root='./data', train=train, download=True, transform=transform)   
-    elif name == 'SVHN':
-        return datasets.SVHN(root='./data', split='train', download=True, transform=transform)
-    elif name == 'Omniglot':
-        return datasets.Omniglot(root='./data', download=True, transform=transform)
-    else:
-        raise ValueError("Dataset name not recognized. Choose between 'MNIST', 'EMNIST Balanced', 'EMNIST Byclass', 'EMNIST Bymerge', 'EMNIST Digits', 'EMNIST Letters', 'EMNIST Mnist', 'QMNIST', 'KMNIST', 'FashionMNIST', 'USPS', 'SVHN' and 'Omniglot'")
+        return datasets.EMNIST(root='./data', split='mnist', train=train, download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in ('QMNIST', 'BinaryQMNIST'):
+        return datasets.QMNIST(root='./data', what='train', download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in ('KMNIST', 'BinaryKMNIST'):
+        return datasets.KMNIST(root='./data', train=train, download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in ('FashionMNIST', 'BinaryFashionMNIST'):
+        return datasets.FashionMNIST(root='./data', train=train, download=True, transform=transforms.Compose(transformation_list))     
+    
+    elif name in ('USPS', 'BinaryUSPS'):
+        return datasets.USPS(root='./data', train=train, download=True, transform=transforms.Compose(transformation_list))   
+    
+    elif name in ('SVHN', 'BinarySVHN'):
+        return datasets.SVHN(root='./data', split='train', download=True, transform=transforms.Compose(transformation_list))
+    
+    elif name in ('Omniglot', 'BinaryOmniglot'):
+        return datasets.Omniglot(root='./data', download=True, transform=transforms.Compose(transformation_list))
     
 
 class CorrectEMNISTOrientation(object):

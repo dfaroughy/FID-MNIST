@@ -58,12 +58,32 @@ def get_model_accuracy(model, device, test_dataloader):
     return accuracy
 
 
-
-def plot_images(images, title,  cmap="gray", figsize=(4, 4)):
+def plot_uncolor_images(images, title,  cmap="gray", figsize=(4, 4)):
     fig, axes = plt.subplots(8, 8, figsize=figsize)
     axes = axes.flatten()
     for i, ax in enumerate(axes):
         ax.imshow(images[i].squeeze(), cmap=cmap)
+        ax.axis('off')
+    plt.suptitle(title)
+    plt.show()
+
+def plot_color_images(images, title, figsize=(4, 4)):
+    fig, axes = plt.subplots(8, 8, figsize=figsize)
+    axes = axes.flatten()
+    for i, ax in enumerate(axes):
+        img = images[i].permute(1, 2, 0)
+        ax.imshow(img)
+        ax.axis('off')
+    plt.suptitle(title)
+    plt.show()
+
+def plot_images(images, title, figsize=(4, 4), cmap=None):
+    fig, axes = plt.subplots(8, 8, figsize=figsize)
+    axes = axes.flatten()
+    for i, ax in enumerate(axes):
+        img = images[i].permute(1, 2, 0)
+        if cmap is not None: ax.imshow(img, cmap=cmap)
+        else: ax.imshow(img)
         ax.axis('off')
     plt.suptitle(title)
     plt.show()
