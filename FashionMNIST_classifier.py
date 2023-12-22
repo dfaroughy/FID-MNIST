@@ -1,11 +1,11 @@
 from torch.utils.data import DataLoader
-from datasets import load_nist_data
+from image_datasets import load_nist_data
 from utils import train_classifier
 from architectures import ResNet18
 
 #==================================
 dataname = 'BinaryFashionMNIST'
-accuracy_goal = 0.90
+accuracy_goal = 0.95
 device = 'cuda:0'
 #==================================
 

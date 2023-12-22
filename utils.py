@@ -8,17 +8,23 @@ import tqdm
 def train_classifier(model, 
                      train_dataloader, 
                      test_dataloader, 
-                     accuracy_goal=95,
                      device = 'cpu',
                      save_as='model.pth', 
-                     epochs=10, 
+                     max_epochs=10, 
+                     early_stopping=None,
+                     accuracy_goal=None,
                      lr=0.001):
-    
+
+    early_stopping = max_epochs if early_stopping is None else early_stopping
+    accuracy_goal = 1 if accuracy_goal is None else accuracy_goal
+
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.CrossEntropyLoss()
+    max_accuracy = 0
+    patience = 0
 
-    for epoch in tqdm.tqdm(range(1, epochs), desc="Epochs"):
+    for epoch in tqdm.tqdm(range(1, max_epochs), desc="Epochs"):
 
         for (data, target) in train_dataloader:
             data, target = data.to(device), target.to(device)
@@ -30,38 +36,43 @@ def train_classifier(model,
 
         accuracy = get_model_accuracy(model, device, test_dataloader)
 
-        if epoch % 3 == 0:
-            print('current accuracy: {}%'.format(accuracy))
-
+        if accuracy > max_accuracy:
+            patience = 0
+            max_accuracy = accuracy
+            torch.save(model.state_dict(), save_as)
+            print('INFO: current max accuracy: {}%'.format(100. * accuracy))
+        else:
+            patience += 1
+            if patience > early_stopping:
+                print('INFO: accuracy has not improved in {} epochs. Stopping training at {} epochs'.format(early_stopping, epoch))
+                break
         if accuracy > accuracy_goal:
-            print('accuracy goal reached. Stopping training at {} epochs'.format(accuracy_goal, epoch))
+            print('INFO: accuracy goal reached. Stopping training at {} epochs'.format(epoch))
             break
 
-    print('final accuracy: {}%'.format(accuracy))
-    torch.save(model.state_dict(), save_as)
+    print('INFO: final accuracy: {}%'.format(accuracy))
 
 
 @torch.no_grad()
 def get_model_accuracy(model, device, test_dataloader):
-    # model.to(device)
     model.eval()
     test_loss = 0
     correct = 0
-    with torch.no_grad():
-        for data, target in test_dataloader:
-            data, target = data.to(device), target.to(device)
-            output = model(data)
-            test_loss += F.cross_entropy(output, target, reduction='sum').item()  # sum up batch loss
-            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-            correct += pred.eq(target.view_as(pred)).sum().item()
+
+    for data, target in test_dataloader:
+        data, target = data.to(device), target.to(device)
+        output = model(data)
+        test_loss += F.cross_entropy(output, target, reduction='sum').item() 
+        pred = output.argmax(dim=1, keepdim=True)
+        correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_dataloader.dataset)
-    accuracy = 100. * correct / len(test_dataloader.dataset)
+    accuracy = correct / len(test_dataloader.dataset)
     return accuracy
 
 
 def plot_uncolor_images(images, title,  cmap="gray", figsize=(4, 4)):
-    fig, axes = plt.subplots(8, 8, figsize=figsize)
+    _, axes = plt.subplots(8, 8, figsize=figsize)
     axes = axes.flatten()
     for i, ax in enumerate(axes):
         ax.imshow(images[i].squeeze(), cmap=cmap)
