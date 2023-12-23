@@ -49,8 +49,9 @@ def train_classifier(model,
         if accuracy > accuracy_goal:
             print('INFO: accuracy goal reached. Stopping training at {} epochs'.format(epoch))
             break
-
-    print('INFO: final accuracy: {}%'.format(accuracy))
+    print('===================================')
+    print('INFO: final max accuracy: {}%'.format(max_accuracy))
+    print('===================================')
 
 
 @torch.no_grad()

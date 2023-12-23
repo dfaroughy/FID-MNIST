@@ -14,26 +14,6 @@ def frechet_distance(mu_1, sigma_1, mu_2, sigma_2):
     trace = sigma_1.trace() + sigma_2.trace() - 2 * torch.linalg.eigvals(sigma_1 @ sigma_2).sqrt().real.sum(dim=-1)
     return mse + trace
 
-# @torch.no_grad()
-# def compute_activation_statistics(model, dataset, batch_size=64, activation_layer='fc1', device='cpu'):
-#     '''
-#      Returns:
-#      - mu    : The sample mean of the activations of the activation_layer of the classifier.
-#      - sigma : The sample covariance of the activations of the activation_layer of the classifier.
-#     '''
-#     model.to(device)
-#     model.eval()     
-#     features = []
-
-#     for batch, _ in DataLoader(dataset, batch_size=batch_size, shuffle=False):
-#         batch =  batch.to(device)
-#         features.append(model(batch, activation_layer=activation_layer))
-
-#     features = torch.cat(features, dim=0)
-#     mu = torch.mean(features, dim=0)
-#     sigma = torch.cov(features.t())
-#     return mu, sigma
-
 @torch.no_grad()
 def compute_activation_statistics(model, dataset, batch_size=64, activation_layer='fc1', device='cpu'):
     model.to(device)
