@@ -59,11 +59,36 @@ def load_nist_data(name='MNIST', train=True, distortion=None, level=None):
     elif distortion == 'binerize': 
         transformation_list.append(transforms.ToTensor())
         transformation_list.append(transforms.Lambda(lambda x: (x > level).type(torch.float32)))
-        
+
+    elif distortion == 'half_mask':
+        transformation_list.append(transforms.Lambda(lambda x: apply_half_mask(x)))
+        transformation_list.append(transforms.ToTensor())
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
+    
+    elif distortion == 'half_mask':
+        transformation_list.append(transforms.Lambda(lambda x: apply_half_mask(x)))
+        transformation_list.append(transforms.ToTensor())
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
+   
+    elif distortion == 'half_noisy':
+        transformation_list.append(transforms.Lambda(lambda x: apply_half_noisy(x, std=level)))
+        transformation_list.append(transforms.ToTensor())
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
+
+    elif distortion == 'half_pure_noise':
+        transformation_list.append(transforms.Lambda(lambda x: apply_half_pure_noise(x, std=level)))
+        transformation_list.append(transforms.ToTensor())
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
+
     else:
         transformation_list.append(transforms.ToTensor())
         if binerize_data: 
             transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold[name]).type(torch.float32)))
+    
     
     #...load dataset:
         
@@ -156,3 +181,54 @@ def apply_mask(image, p=0.1):
     black_img = Image.new('L', image.size, color=0)
     black_img.paste(mask, (int((image.width - mask_size[0]) / 2), int((image.height - mask_size[1]) / 2)))
     return Image.composite(image, black_img, black_img)
+
+def apply_half_mask(image):
+    """ Masks the first half of the image along its width. """
+    mask_height = int(image.height / 2)
+    mask_width = image.width
+    mask_size = (mask_width, mask_height)
+    mask = Image.new('L', mask_size, color=255) 
+    black_img = Image.new('L', image.size, color=0)
+    black_img.paste(mask, (0, 0))  
+    return Image.composite(image, black_img, black_img)
+
+
+def apply_half_noisy(image, std=1.0):
+    """ Masks the lower half of the image along its height and adds Gaussian noise to it. """
+    mask_height = int(image.height / 2)
+    mask_width = image.width
+    mask_size = (mask_width, mask_height)
+    mask = Image.new('L', mask_size, color=255) 
+    noise = np.random.normal(0, std, mask_size).astype(np.float32)
+    noise = np.clip(noise, -255, 255) 
+    noise_img = Image.fromarray(noise.astype(np.uint8))
+    final_img = Image.new('L', image.size, color=0)
+    final_img.paste(mask, (0, 0))
+    final_img.paste(noise_img, (0, mask_height))
+    return Image.composite(image, final_img, final_img)
+
+
+def apply_half_pure_noise(image, std=1.0):
+    """ Replaces the lower half of the image with Gaussian noise. """
+
+    # Calculate the dimensions for the lower half
+    mask_height = int(image.height / 2)
+    mask_width = image.width
+
+    # Generate Gaussian noise for the lower half
+    noise = np.random.normal(0, std, (mask_height, mask_width)).astype(np.float32)
+    noise = np.clip(noise, 0, 255) 
+
+    # Create an image from the noise
+    noise_image = Image.fromarray(noise.astype(np.uint8))
+
+    # Create a new image to hold the final result
+    final_img = Image.new('L', image.size, color=0)
+
+    # Paste the original image on the upper half of the final image
+    final_img.paste(image.crop((0, 0, mask_width, mask_height)), (0, 0))
+
+    # Paste the noise image on the lower half of the final image
+    final_img.paste(noise_image, (0, mask_height))
+
+    return final_img

@@ -96,6 +96,7 @@ def plot_images(images, title, figsize=(4, 4), cmap=None):
     axes = axes.flatten()
     for i, ax in enumerate(axes):
         img = images[i].permute(1, 2, 0)
+        img = img.squeeze()  # Squeeze the last dimension if it's 1
         if cmap is not None: ax.imshow(img, cmap=cmap)
         else: ax.imshow(img)
         ax.axis('off')
