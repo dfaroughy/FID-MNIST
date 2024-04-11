@@ -59,3 +59,14 @@ def fid_distorted_NIST(model, name='MNIST', distortion='noise', values=np.arange
         dataset = load_nist_data(name, distortion=distortion, level=val, train=False)
         fid[val] = compute_fid(model, dataset, mu_ref=mu, sigma_ref=sigma, batch_size=batch_size, activation_layer=activation_layer, device=device).cpu()
     return fid
+
+def fid_distorted_NIST(model, name='MNIST', distortion='noise', values=np.arange(0.0, 1, 0.02), batch_size=64, activation_layer='fc1', device='cpu'):
+    
+    dataset = load_nist_data(name=name, train=False)
+    mu, sigma = compute_activation_statistics(model, dataset, batch_size=batch_size, activation_layer=activation_layer, device=device)
+    fid = {}
+    
+    for val in values:
+        dataset = load_nist_data(name, distortion=distortion, level=val, train=False) if distortion != 'homogenize' else load_nist_data(name=name, train=False)
+        fid[val] = compute_fid(model, dataset, mu_ref=mu, sigma_ref=sigma, batch_size=batch_size, activation_layer=activation_layer, device=device).cpu()
+    return fid
