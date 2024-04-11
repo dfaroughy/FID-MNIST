@@ -1,9 +1,10 @@
 import torch
 import numpy as np
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, TensorDataset
 
 from image_datasets import load_nist_data
+from utils import sample_diversity
 
 def frechet_distance(mu_1, sigma_1, mu_2, sigma_2):
     '''
@@ -50,23 +51,16 @@ def compute_fid(model, dataset, dataset_ref=None, mu_ref=None, sigma_ref=None, b
 
 
 def fid_distorted_NIST(model, name='MNIST', distortion='noise', values=np.arange(0.0, 1, 0.02), batch_size=64, activation_layer='fc1', device='cpu'):
-    
     dataset = load_nist_data(name=name, train=False)
     mu, sigma = compute_activation_statistics(model, dataset, batch_size=batch_size, activation_layer=activation_layer, device=device)
     fid = {}
-    
     for val in values:
-        dataset = load_nist_data(name, distortion=distortion, level=val, train=False)
-        fid[val] = compute_fid(model, dataset, mu_ref=mu, sigma_ref=sigma, batch_size=batch_size, activation_layer=activation_layer, device=device).cpu()
-    return fid
-
-def fid_distorted_NIST(model, name='MNIST', distortion='noise', values=np.arange(0.0, 1, 0.02), batch_size=64, activation_layer='fc1', device='cpu'):
-    
-    dataset = load_nist_data(name=name, train=False)
-    mu, sigma = compute_activation_statistics(model, dataset, batch_size=batch_size, activation_layer=activation_layer, device=device)
-    fid = {}
-    
-    for val in values:
-        dataset = load_nist_data(name, distortion=distortion, level=val, train=False) if distortion != 'homogenize' else dataset
+        if distortion == 'undiversify':
+            dataloader = DataLoader(dataset, batch_size=100000, shuffle=False)
+            images, labels = next(iter(dataloader))
+            replicated_images, replicated_labels = sample_diversity(images, labels, diversity=val)
+            dataset = TensorDataset(replicated_images, replicated_labels)
+        else:
+            dataset = load_nist_data(name, distortion=distortion, level=val, train=False)
         fid[val] = compute_fid(model, dataset, mu_ref=mu, sigma_ref=sigma, batch_size=batch_size, activation_layer=activation_layer, device=device).cpu()
     return fid

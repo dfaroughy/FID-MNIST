@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 from torchvision import datasets, transforms
 from skimage.transform import swirl
+import random
 
 def load_nist_data(name='MNIST', train=True, distortion=None, level=None):
     
@@ -17,7 +18,7 @@ def load_nist_data(name='MNIST', train=True, distortion=None, level=None):
     binerize_data = False
     if "Binary" in name: 
         binerize_data = True
-        binary_threshold = {'BinaryMNIST': 0.5, 'BinaryFashionMNIST': 0.75, 'BinaryCIFAR10': 0.75, 'BinaryCelebA': 0.5, 'BinaryImagNet': 0.5, 
+        binary_threshold = {'BinaryMNIST': 0.5, 'BinaryFashionMNIST': 0.5, 'BinaryCIFAR10': 0.75, 'BinaryCelebA': 0.5, 'BinaryImagNet': 0.5, 
                             'BinaryEMNIST Balanced': 0.5, 'BinaryEMNIST Byclass': 0.5, 'BinaryEMNIST Bymerge': 0.5, 'BinaryEMNIST Digits': 0.5, 
                             'BinaryEMNIST Letters': 0.5, 'BinaryEMNIST mnist': 0.5, 'BinaryQMNIST': 0.5, 'BinaryKMNIST': 0.5, 'BinaryUSPS': 0.5, 
                             'BinarySVHN': 0.5, 'BinaryOmniglot': 0.5}
@@ -232,3 +233,26 @@ def apply_half_pure_noise(image, std=1.0):
     final_img.paste(noise_image, (0, mask_height))
 
     return final_img
+
+
+def sample_diversity(images, labels, diversity=0.0):
+    if diversity > 1.0: diversity = 1.0
+    images_replicated, labels_replicated=[], []
+    for i in range(10):
+        img, lbl = images[labels==i], labels[labels==i]
+        N = img.shape[0]
+        M = int((diversity) * N)
+        if M == 0: M=1
+        j = random.sample(range(0, N), M)
+        img_sub, lbl_sub = img[j], lbl[j]
+        k = torch.randint(low=0, high=M, size=(N,))
+        images_replicated.append(img_sub[k])
+        labels_replicated.append(lbl_sub[k])
+
+    images_replicated = torch.cat(images_replicated, dim=0)
+    labels_replicated = torch.cat(labels_replicated, dim=0)
+    idx = torch.randperm(images_replicated.size(0))
+    images_replicated = images_replicated[idx]
+    labels_replicated = labels_replicated[idx]
+    
+    return images_replicated, labels_replicated

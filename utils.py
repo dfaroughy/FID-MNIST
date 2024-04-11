@@ -2,15 +2,14 @@ import torch
 import torch.nn as nn 
 import tqdm
 import numpy as np
+import random
 import torch.optim as optim
 
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
-import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from torchvision.utils import make_grid
 
-from utils import plot_images
 from image_datasets import load_nist_data
 
 def train_classifier(model, 
@@ -127,21 +126,14 @@ def mnist_grid(sample, title=None, xlabel=None, num_img=5, nrow=8, figsize=(10,1
     plt.show()
 
 
-def get_10_digits(images, labels):
-  digits={}
-  for i in range(10):
-      digits[i] = images[labels == i]
-  digits = torch.cat([
-                    digits[1][0],
-                    digits[2][0],
-                    digits[3][0],
-                    digits[4][0],
-                    digits[5][0],
-                    digits[6][0],
-                    digits[7][0],
-                    digits[8][0],
-                    digits[9][0]
-                    ], dim=0)  
+def get_10_digits(images, labels, digits=[1,2,3,4,5,6,7,8,9], random=False):
+  d=[]
+  for i in digits:
+      imgs = images[labels == i] 
+      idx = torch.randint(0, imgs.size(0), (1,)).item()
+      img = imgs[idx] if random else imgs[0]
+      d.append(img)
+  digits = torch.cat(d, dim=0)  
   digits = digits.unsqueeze(1)
   return digits
 
@@ -186,3 +178,52 @@ def plot_combined_with_mnist_grid(samples, fcd, distortion, dist_levels, xlim=(0
     plt.tight_layout()
     plt.savefig(distortion + '_combined_plot.png', bbox_inches='tight', dpi=500)
     plt.show()
+
+
+def sample_diversity(images, labels, diversity=0.0):
+    import random
+    if diversity > 1.0: diversity = 1.0
+    images_replicated, labels_replicated=[], []
+    for i in range(10):
+        img, lbl = images[labels==i], labels[labels==i]
+        N = img.shape[0]
+        M = int((diversity) * N)
+        # print('digit={}, N={}, M={}'.format(i, N, M))
+        if M == 0: M=1
+        j = random.sample(range(0, N), M)
+        img_sub, lbl_sub = img[j], lbl[j]
+        k = torch.randint(low=0, high=M, size=(N,))
+        images_replicated.append(img_sub[k])
+        labels_replicated.append(lbl_sub[k])
+
+    images_replicated = torch.cat(images_replicated, dim=0)
+    labels_replicated = torch.cat(labels_replicated, dim=0)
+    idx = torch.randperm(images_replicated.size(0))
+    images_replicated = images_replicated[idx]
+    labels_replicated = labels_replicated[idx]
+    
+    return images_replicated, labels_replicated
+
+
+def contaminate_sample(images, labels, diversity=0.0):
+    import random
+    if diversity > 1.0: diversity = 1.0
+    images_replicated, labels_replicated=[], []
+    for i in range(10):
+        img, lbl = images[labels==i], labels[labels==i]
+        N = img.shape[0]
+        M = int((diversity) * N)
+        if M == 0: M=1
+        j = random.sample(range(0, N), M)
+        img_sub, lbl_sub = img[j], lbl[j]
+        k = torch.randint(low=0, high=M, size=(N,))
+        images_replicated.append(img_sub[k])
+        labels_replicated.append(lbl_sub[k])
+
+    images_replicated = torch.cat(images_replicated, dim=0)
+    labels_replicated = torch.cat(labels_replicated, dim=0)
+    idx = torch.randperm(images_replicated.size(0))
+    images_replicated = images_replicated[idx]
+    labels_replicated = labels_replicated[idx]
+    
+    return images_replicated, labels_replicated
