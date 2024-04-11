@@ -33,6 +33,12 @@ def load_nist_data(name='MNIST', train=True, distortion=None, level=None):
         if binerize_data: 
             transformation_list.append(transforms.Lambda(lambda x: (x >  binary_threshold[name]).type(torch.float32)))
     
+    if distortion == 'melt': 
+        transformation_list.append(transforms.ToTensor())
+        transformation_list.append(transforms.Lambda(lambda x: add_gaussian_melt(x, fraction=level)))
+        if binerize_data: 
+            transformation_list.append(transforms.Lambda(lambda x: (x >  binary_threshold[name]).type(torch.float32)))
+
     elif distortion == 'blur':  
         transformation_list.append(transforms.ToTensor())
         transformation_list.append(transforms.GaussianBlur(kernel_size=7, sigma=level))
@@ -154,6 +160,41 @@ def add_gaussian_noise(tensor, mean=0., std=1.):
     """Adds Gaussian noise to a tensor."""
     noise = torch.randn(tensor.size()) * std + mean
     return tensor + noise
+
+def add_gaussian_melt(tensor, fraction=0.1):
+    """
+    Randomly flips a fraction of 1s to 0s in a tensor of shape (1, 28, 28).
+    
+    Parameters:
+        tensor (torch.Tensor): Input tensor of shape (1, 28, 28) with entries that are 0s and 1s.
+        fraction (float): Fraction of 1s to flip to 0s.
+    
+    Returns:
+        torch.Tensor: Tensor with some 1s flipped to 0s.
+    """
+    # Ensure the input fraction is within a sensible range
+    if not (0 <= fraction <= 1):
+        raise ValueError("Fraction must be between 0 and 1.")
+    
+    # Find indices where the tensor is 1
+    ones_indices = (tensor > 0.0).nonzero(as_tuple=True)
+    
+    # Calculate the number of 1s to flip
+    num_to_flip = int(fraction * len(ones_indices[0]))
+
+    # If no elements to flip, return the original tensor
+    if num_to_flip == 0:
+        return tensor
+
+    # Randomly select indices of the 1s to flip
+    selected_indices = torch.randperm(len(ones_indices[0]))[:num_to_flip]
+
+    # Flip the selected indices from 1 to 0
+    tensor[ones_indices[0][selected_indices], 
+           ones_indices[1][selected_indices], 
+           ones_indices[2][selected_indices]] = 0
+
+    return tensor
 
 def apply_swirl(image, strength=1, radius=20):
     """Apply swirl distortion to an image."""
