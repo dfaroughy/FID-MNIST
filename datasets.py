@@ -7,7 +7,7 @@ import random
 from torch.utils.data import DataLoader
 from utils import mnist_grid
 
-def load_nist_data(name='MNIST', binary_threshold=0.5, train=True, distortion=None,  level=None):
+def load_nist_data(name='MNIST', binary_threshold=0.5, train=True, corruption=None,  level=None):
     
     nist_datasets = ('MNIST', 'EMNIST', 'FashionMNIST', 'Omniglot', 'BinMNIST', 'BinEMNIST', 'BinFashionMNIST', 'BinOmniglot')
     assert name in nist_datasets, 'Dataset name not recognized. Choose between {}'.format(*nist_datasets)
@@ -21,47 +21,47 @@ def load_nist_data(name='MNIST', binary_threshold=0.5, train=True, distortion=No
     
     #...define 1-parametric corruptions:
 
-    if distortion == 'noise': 
+    if corruption == 'noise': 
         transformation_list.append(transforms.ToTensor())
         transformation_list.append(transforms.Lambda(lambda x: apply_noise(x,  mean=0., std=level)))
         if binerize_data:
             transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold).type(torch.float32)))
     
-    if distortion == 'blackout': 
+    if corruption == 'blackout': 
         transformation_list.append(transforms.ToTensor())
         transformation_list.append(transforms.Lambda(lambda x: apply_blackout(x, fraction=level)))
         if binerize_data: 
             transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold).type(torch.float32)))
 
-    elif distortion == 'blur':  
+    elif corruption == 'blur':  
         transformation_list.append(transforms.ToTensor())
         transformation_list.append(transforms.GaussianBlur(kernel_size=7, sigma=level))
         if binerize_data: 
             transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold).type(torch.float32)))
     
-    elif distortion == 'swirl': 
+    elif corruption == 'swirl': 
         transformation_list.append(transforms.Lambda(lambda x: apply_swirl(x, strength=level, radius=20)))
         transformation_list.append(transforms.ToTensor())
         if binerize_data: 
             transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold).type(torch.float32)))
     
-    elif distortion == 'pixelize': 
+    elif corruption == 'pixelize': 
         transformation_list.append(transforms.Lambda(lambda x: apply_coarse_grain(x, p=level)))
         transformation_list.append(transforms.ToTensor())
         if binerize_data: 
             transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold).type(torch.float32)))
     
-    elif distortion == 'crop': 
+    elif corruption == 'crop': 
         transformation_list.append(transforms.Lambda(lambda x: apply_mask(x, p=level)))
         transformation_list.append(transforms.ToTensor())
         if binerize_data: 
             transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold).type(torch.float32)))
     
-    elif distortion == 'binerize': 
+    elif corruption == 'binerize': 
         transformation_list.append(transforms.ToTensor())
         transformation_list.append(transforms.Lambda(lambda x: (x > level).type(torch.float32)))
 
-    elif distortion == 'half_mask':
+    elif corruption == 'half_mask':
         transformation_list.append(transforms.Lambda(lambda x: apply_half_mask(x)))
         transformation_list.append(transforms.ToTensor())
         if binerize_data: 
@@ -91,8 +91,8 @@ class CorrectEMNISTOrientation(object):
         return transforms.functional.rotate(img, -90).transpose(Image.FLIP_LEFT_RIGHT)
 
 
-def get_test_samples(name='MNIST', distortion=None, level=0.0, classes=[1,2,3,4,5,6,7,8,9], random=False, plot=False):
-    data = load_nist_data(name=name, distortion=distortion, level=level)
+def get_test_samples(name='MNIST', corruption=None, level=0.0, classes=[1,2,3,4,5,6,7,8,9], random=False, plot=False):
+    data = load_nist_data(name=name, corruption=corruption, level=level)
     dataloader = DataLoader(data, batch_size=20*len(classes), shuffle=False)
     images, labels = next(iter(dataloader))
     d=[]
@@ -104,8 +104,8 @@ def get_test_samples(name='MNIST', distortion=None, level=0.0, classes=[1,2,3,4,
     sample = torch.cat(d, dim=0)  
     sample = sample.unsqueeze(1)
     if plot:
-        title='level={}'.format(level) if distortion is not None else ''
-        mnist_grid(sample, title=title, xlabel=name + ' + ' + distortion, num_img=9, nrow=3, figsize=(1.5,1.5))
+        title='level={}'.format(level) if corruption is not None else ''
+        mnist_grid(sample, title=title, xlabel=name + ' + ' + corruption, num_img=9, nrow=3, figsize=(1.5,1.5))
     return sample
 
 
@@ -133,7 +133,7 @@ def apply_blackout(tensor, fraction=0.1):
     return tensor
 
 def apply_swirl(image, strength=1, radius=20):
-    """Apply swirl distortion to an image."""
+    """Apply swirl corruption to an image."""
     image_np = np.array(image)
     swirled_image = swirl(image_np, strength=strength, radius=radius, mode='reflect')
     return Image.fromarray(swirled_image)

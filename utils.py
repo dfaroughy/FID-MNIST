@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from torchvision.utils import make_grid
 
-from image_datasets import load_nist_data
 
 def train_classifier(model, 
                      train_dataloader, 
