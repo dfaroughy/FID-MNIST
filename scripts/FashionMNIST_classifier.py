@@ -1,7 +1,7 @@
 from torch.utils.data import DataLoader
-from image_datasets import load_nist_data
+from datasets import load_nist_data
 from utils import train_classifier
-from architectures import ResNet18
+from models import ResNet18
 
 #==================================
 dataname = 'BinaryFashionMNIST'

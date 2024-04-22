@@ -5,14 +5,14 @@ import numpy as np
 
 #... LeNet architectures
 
-class _ConvNet(nn.Module):
+class ConvNet(nn.Module):
     def __init__(self,  
                  num_classes,
                  num_channels,
                  dim_hidden,
                  filter_size
                  ):
-        super(_ConvNet, self).__init__()
+        super(ConvNet, self).__init__()
         self.conv1 = nn.Conv2d(1, num_channels[0], filter_size)
         self.conv2 = nn.Conv2d(num_channels[0], num_channels[1], filter_size)
         self.fc1 = nn.Linear(num_channels[1] * 4 * 4, dim_hidden[0])
@@ -31,11 +31,11 @@ class _ConvNet(nn.Module):
         if activation_layer == 'fc3': return x  
         return F.log_softmax(x, dim=1)  
 
-class LeNet3(_ConvNet):
+class LeNet3(ConvNet):
     def __init__(self, num_classes, num_channels, dim_hidden, filter_size=3):
         super(LeNet3, self).__init__(num_classes, num_channels, dim_hidden, filter_size)
 
-class LeNet5(_ConvNet):
+class LeNet5(ConvNet):
     def __init__(self, num_classes):
         super(LeNet5, self).__init__(num_classes, num_channels=(6, 16), dim_hidden=(120, 84), filter_size=5)
 

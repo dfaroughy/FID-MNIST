@@ -1,7 +1,7 @@
 from torch.utils.data import DataLoader
-from image_datasets import load_nist_data
+from datasets import load_nist_data
 from utils import train_classifier
-from architectures import LeNet5, LeNet3, ResNet18, ResNet34
+from models import LeNet5, LeNet3, ResNet18, ResNet34
 
 #==================================
 dataname = 'BinaryMNIST'
