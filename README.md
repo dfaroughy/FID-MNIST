@@ -1,4 +1,4 @@
-# Fréchet Distance for MNIST
+# Fréchet Classifier Distance for MNIST
 
 To effectively evaluate generative models on the [MNIST dataset](http://yann.lecun.com/exdb/mnist/) (or similar single-channel $28\times28$ pixel images), 
 we propose a metric similar to the [Fréchet Inception Distance (FID)](https://arxiv.org/abs/1706.08500). This metric replaces the `InceptionNet-v3` 
