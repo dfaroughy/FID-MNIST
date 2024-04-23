@@ -5,13 +5,11 @@ we propose a metric similar to the [Fréchet Inception Distance (FID)](https://a
 architecture with a classifier better suited for MNIST-like images.
 
 While more complex architectures could be used, our experiments demonstrate that a slightly modified
-[`LeNet-5` classifier](http://yann.lecun.com/exdb/publis/pdf/lecun-95b.pdf), achieving classification accuracy above $95$% for MNIST digits, 
-leads to a good metric. The resulting metric, termed the *Fréchet LeNet Distance* (FLD), is computed from the 
-Fréchet distance between Gaussian feature vectors extracted from the middle connected layer (FLD$_2$) of the LeNet 
-classifier, assessed on both target and reference datasets.
+[`LeNet`](http://yann.lecun.com/exdb/publis/pdf/lecun-95b.pdf) classifier, achieving an accuracy above $95$% for MNIST digit classification, 
+leads to a good similarity metric. The *Fréchet LeNet Distance* (FLD) is the Frechet distance between the target and reference comnputed computed from feature of the last layers of a pre-trained `LeNet-5` 
+classifier.
 
-We show that the FLD$_2$ metric correlates well with human judgment when applied to the MNIST digits dataset. The FLD value increases monotonically 
-as more corruption is introduced to the images. This trend is consistent across various distortions, such as:
+We show that the $FLD_2$ metric (computed from the features in the second fully-connected layer) correlates well with human judgment when applied to the MNIST digits dataset. Similarily, $FLD_3$ is a good metric for a binerized the MNIST dataset. The resulting FLD values increases monotonically as more corruption is introduced to the images. This trend is consistent across various distortions, such as:
 
 - Gaussian noise, 
 - Gaussian blur, 
