@@ -1,13 +1,14 @@
 from torch.utils.data import DataLoader
 from dataset import load_nist_data
 from utils import train_classifier
-from models import LeNet5
+from models import CNN
+import torch.nn as nn
 
 #==================================
 dataname = 'MNIST'
-network = 'LeNet5'
+model = CNN(init_filters=32, dim_hidden=(256, 128), dropout=(0.25, 0.1), num_classes=10) 
 accuracy_goal = 0.995
-device = 'cuda:1'
+device = 'cuda:0'
 #==================================
 
 train = load_nist_data(name=dataname)
@@ -17,18 +18,17 @@ test_dataloader = DataLoader(test, batch_size=64, shuffle=False)
 
 #...train classifier
 
-if network == 'LeNet5': model = LeNet5(num_classes=10) 
 
-print('INFO: training {} on {}'.format(network, dataname))
+print('INFO: training {} on {}'.format('CNN', dataname))
 
 train_classifier(model, 
                  train_dataloader=train_dataloader,
                  test_dataloader=test_dataloader,
                  device=device,
                  accuracy_goal=accuracy_goal,
-                 lr=0.001,
+                 lr=0.0004,
                  max_epochs=100, 
                  early_stopping=20,
-                 save_as='models/{}_{}.pth'.format(network,'_'.join(dataname.split(' ')))
+                 save_as='models/{}_{}.pth'.format('CNN_v2','_'.join(dataname.split(' ')))
                  )
 

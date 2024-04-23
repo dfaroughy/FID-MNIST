@@ -4,12 +4,11 @@ To effectively evaluate generative models on the [MNIST dataset](http://yann.lec
 we propose a metric similar to the [Fréchet Inception Distance (FID)](https://arxiv.org/abs/1706.08500). This metric replaces the `InceptionNet-v3` 
 architecture with a classifier better suited for MNIST-like images.
 
-While more complex architectures could be used, our experiments demonstrate that a slightly modified
-[`LeNet`](http://yann.lecun.com/exdb/publis/pdf/lecun-95b.pdf) classifier, achieving an accuracy above $95$% for MNIST digit classification, 
-leads to a good similarity metric. The *Fréchet LeNet Distance* (FLD) is the Frechet distance between the target and reference comnputed computed from feature of the last layers of a pre-trained `LeNet-5` 
-classifier.
+Our experiments demonstrate that a slightly modified
+[`LeNet-5`](http://yann.lecun.com/exdb/publis/pdf/lecun-95b.pdf) architecture, with classification accuracy above $99$% for MNIST digits, 
+leads to a good similarity metric that correlates well with human judgement. We define the *Fréchet LeNet Distance* (FLD) as the Frechet distance between hidden features of the last layers of a pre-trained LeNet classifier evaluated on target and reference datasets.
 
-We show that the $FLD_2$ metric (computed from the features in the second fully-connected layer) correlates well with human judgment when applied to the MNIST digits dataset. Similarily, $FLD_3$ is a good metric for a binerized the MNIST dataset. The resulting FLD values increases monotonically as more corruption is introduced to the images. This trend is consistent across various distortions, such as:
+As can be seen below, the FLD values of the three fully-connected layers (third is the output before softmaxing) increases monotonically as more corruption is introduced to the images. This trend is consistent across various distortions:
 
 - Gaussian noise, 
 - Gaussian blur, 
@@ -24,3 +23,10 @@ We show that the $FLD_2$ metric (computed from the features in the second fully-
 ![Fréchet Distance Distortions](/plots/Swirl_combined_plot.png)
 ![Fréchet Distance Distortions](/plots/Pixelize_combined_plot.png)
 ![Fréchet Distance Distortions](/plots/Crop_combined_plot.png)
+
+From here one sees that a good metric for MNIST digits is the averaged features over the first two fully connected layers:
+
+\[
+FLD(\rm MNIST) = \frac{FLD_1+FLD_2}{2}
+\]
+
