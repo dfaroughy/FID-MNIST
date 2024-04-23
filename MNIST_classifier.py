@@ -5,7 +5,7 @@ from models import CNN
 import torch.nn as nn
 
 #==================================
-dataname = 'MNIST'
+dataname = 'BinMNIST'
 model = CNN(init_filters=32, dim_hidden=(256, 128), dropout=(0.25, 0.1), num_classes=10) 
 accuracy_goal = 0.995
 device = 'cuda:0'

@@ -15,7 +15,6 @@ def load_nist_data(name='MNIST', binary_threshold=0.5, train=True, corruption=No
 
     binerize_data = False
     if "Bin" in name:
-        print("INFO: binerizing dataset with threshold={}".format(binary_threshold)) 
         binerize_data = True
 
     transformation_list=[]
