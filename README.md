@@ -13,12 +13,15 @@ We show that the FLD metric correlates well with human judgment when applied to 
 as more corruption is introduced to the images. This trend is consistent across various distortions, such as:
 
 - Gaussian noise, 
-- blackout,
 - Gaussian blur, 
+- blackout,
 - swirl effects,
 - pixelization,
 - rectangular cropping.
 
-![Fréchet Distance Distortions](/plots/Blur_combined_plot.png)
 ![Fréchet Distance Distortions](/plots/Noise_combined_plot.png)
-
+![Fréchet Distance Distortions](/plots/Blur_combined_plot.png)
+![Fréchet Distance Distortions](/plots/Blackout_combined_plot.png)
+![Fréchet Distance Distortions](/plots/Swirl_combined_plot.png)
+![Fréchet Distance Distortions](/plots/Pixelize_combined_plot.png)
+![Fréchet Distance Distortions](/plots/Crop_combined_plot.png)

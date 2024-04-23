@@ -1,14 +1,13 @@
-
 from torch.utils.data import DataLoader
-from datasets import load_nist_data
+from dataset import load_nist_data
 from utils import train_classifier
-from models import LeNet5, ResNet18, ResNet34
+from models import LeNet5
 
 #==================================
-dataname = 'BinaryEMNIST Letters'
-network = 'ResNet18'
-accuracy_goal = 0.99
-device = 'cuda:2'
+dataname = 'MNIST'
+network = 'LeNet5'
+accuracy_goal = 0.995
+device = 'cuda:1'
 #==================================
 
 train = load_nist_data(name=dataname)
@@ -18,9 +17,7 @@ test_dataloader = DataLoader(test, batch_size=64, shuffle=False)
 
 #...train classifier
 
-if network == 'LeNet5': model = LeNet5(num_classes=27) 
-if network == 'ResNet18': model = ResNet18(num_classes=27) 
-if network == 'ResNet34': model = ResNet34(num_classes=27) 
+if network == 'LeNet5': model = LeNet5(num_classes=10) 
 
 print('INFO: training {} on {}'.format(network, dataname))
 
@@ -31,6 +28,7 @@ train_classifier(model,
                  accuracy_goal=accuracy_goal,
                  lr=0.001,
                  max_epochs=100, 
-                 early_stopping=25,
+                 early_stopping=20,
                  save_as='models/{}_{}.pth'.format(network,'_'.join(dataname.split(' ')))
                  )
+

@@ -2,19 +2,18 @@ import torch
 import torch.nn as nn 
 import tqdm
 import numpy as np
-import random
 import torch.optim as optim
-
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from torchvision.utils import make_grid
 
+#... LeNet Classififer training
 
 def train_classifier(model, 
                      train_dataloader, 
                      test_dataloader, 
-                     device = 'cpu',
+                     device='cpu',
                      save_as='model.pth', 
                      max_epochs=10, 
                      early_stopping=None,
@@ -77,6 +76,7 @@ def get_model_accuracy(model, device, test_dataloader):
     accuracy = correct / len(test_dataloader.dataset)
     return accuracy
 
+#...plotting funcs
 
 def plot_uncolor_images(images, title,  cmap="gray", figsize=(4, 4)):
     _, axes = plt.subplots(8, 8, figsize=figsize)
@@ -109,21 +109,21 @@ def plot_images(images, title, figsize=(4, 4), cmap=None):
     plt.suptitle(title)
     plt.show()
 
-
-def mnist_grid(sample, title=None, xlabel=None, num_img=5, nrow=8, figsize=(10,10), save=False):
+def mnist_grid(sample, title=None, xlabel=None, num_img=5, nrow=8, figsize=(10,10), save=False, cmap=plt.cm.gray):
     _, ax= plt.subplots(1,1, figsize=figsize)
     sample = sample[:num_img]
     img = make_grid(sample, nrow=nrow)
     npimg = np.transpose(img.detach().cpu().numpy(),(1,2,0))
-    plt.imshow(npimg)
-    plt.title(title)
+    npimg = npimg.squeeze()
+    if cmap is not None: ax.imshow(npimg, cmap=cmap)
+    else: ax.imshow(npimg)   
+    plt.title(title, fontsize=8)
     ax.set_xlabel(xlabel, fontsize=8)
     ax.set_xticks([])
     ax.set_yticks([])
     if save:
         plt.savefig( 'images/' + title + '.png', bbox_inches='tight', dpi=2000)
     plt.show()
-
 
 def get_10_digits(images, labels, digits=[1,2,3,4,5,6,7,8,9], random=False):
   d=[]
@@ -136,7 +136,7 @@ def get_10_digits(images, labels, digits=[1,2,3,4,5,6,7,8,9], random=False):
   digits = digits.unsqueeze(1)
   return digits
 
-def plot_combined_with_mnist_grid(samples, fcd, distortion, dist_levels, xlim=(0,100), titles=None, loc='upper left', log=False, figsize=(10, 6)):
+def plot_combined_with_mnist_grid(samples, fcd, distortion, dist_levels, name='MNIST', xlim=(0,100), ylim=(0,200), titles=None, loc='upper left', log=False, figsize=(10, 6)):
     N = len(samples)
     if titles is None: titles = [None] * N
     _ = plt.figure(figsize=figsize)
@@ -153,7 +153,7 @@ def plot_combined_with_mnist_grid(samples, fcd, distortion, dist_levels, xlim=(0
         axs[i].set_xticks([])
         axs[i].set_yticks([])
         if titles:
-            axs[i].set_title('+  '+distortion, fontsize=11) if i > 0 else axs[i].set_title('Binarized MNIST', fontsize=11)
+            axs[i].set_title('+  '+distortion, fontsize=11) if i > 0 else axs[i].set_title(name, fontsize=11)
 
     #...plot FCD:
             
@@ -163,7 +163,7 @@ def plot_combined_with_mnist_grid(samples, fcd, distortion, dist_levels, xlim=(0
     axs[N].set_title('Frechet LeNet Distance', fontsize=10)
     axs[N].set_ylabel(r'FLD', fontsize=9)
     axs[N].set_xlabel('Corruption level', fontsize=9)
-    axs[N].set_ylim(1,800)
+    axs[N].set_ylim(ylim)
     axs[N].set_xlim(xlim)
     axs[N].legend(loc=loc, fontsize=8)
 
@@ -178,6 +178,8 @@ def plot_combined_with_mnist_grid(samples, fcd, distortion, dist_levels, xlim=(0
     plt.savefig(distortion + '_combined_plot.png', bbox_inches='tight', dpi=500)
     plt.show()
 
+
+#...Sample diversity and contamination
 
 def sample_diversity(images, labels, diversity=0.0):
     import random

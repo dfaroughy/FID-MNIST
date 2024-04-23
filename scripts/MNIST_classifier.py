@@ -1,10 +1,10 @@
 from torch.utils.data import DataLoader
-from datasets import load_nist_data
+from dataset import load_nist_data
 from utils import train_classifier
-from models import LeNet5, LeNet3, ResNet18, ResNet34
+from models import LeNet5
 
 #==================================
-dataname = 'BinaryMNIST'
+dataname = 'BinMNIST'
 network = 'LeNet5'
 accuracy_goal = 0.995
 device = 'cuda:1'
@@ -18,15 +18,6 @@ test_dataloader = DataLoader(test, batch_size=64, shuffle=False)
 #...train classifier
 
 if network == 'LeNet5': model = LeNet5(num_classes=10) 
-if network == 'ResNet18': model = ResNet18(num_classes=10) 
-if network == 'ResNet34': model = ResNet34(num_classes=10) 
-if network == 'LeNet3': model = LeNet3(num_classes=10, num_channels=(2, 8), dim_hidden=(64, 32))
-
-# self.conv1 = nn.Conv2d(1, num_channels[0], filter_size)
-# self.conv2 = nn.Conv2d(num_channels[0], num_channels[1], filter_size)
-# self.fc1 = nn.Linear(num_channels[1] * 4 * 4, dim_hidden[0])
-# self.fc2 = nn.Linear(dim_hidden[0], dim_hidden[1])
-# self.fc3 = nn.Linear(dim_hidden[1], num_classes)
 
 print('INFO: training {} on {}'.format(network, dataname))
 

@@ -5,6 +5,7 @@ from torchvision import datasets, transforms
 from skimage.transform import swirl
 import random
 from torch.utils.data import DataLoader
+
 from utils import mnist_grid
 
 def load_nist_data(name='MNIST', binary_threshold=0.5, train=True, corruption=None,  level=None):
@@ -23,11 +24,11 @@ def load_nist_data(name='MNIST', binary_threshold=0.5, train=True, corruption=No
 
     if corruption == 'noise': 
         transformation_list.append(transforms.ToTensor())
-        transformation_list.append(transforms.Lambda(lambda x: apply_noise(x,  mean=0., std=level)))
+        transformation_list.append(transforms.Lambda(lambda x: apply_noise(x, std=level)))
         if binerize_data:
             transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold).type(torch.float32)))
     
-    if corruption == 'blackout': 
+    elif corruption == 'blackout': 
         transformation_list.append(transforms.ToTensor())
         transformation_list.append(transforms.Lambda(lambda x: apply_blackout(x, fraction=level)))
         if binerize_data: 
@@ -70,7 +71,7 @@ def load_nist_data(name='MNIST', binary_threshold=0.5, train=True, corruption=No
         transformation_list.append(transforms.ToTensor())
         if binerize_data: 
             transformation_list.append(transforms.Lambda(lambda x: (x > binary_threshold).type(torch.float32)))
-    
+
     
     #...load dataset:
         
@@ -91,7 +92,7 @@ class CorrectEMNISTOrientation(object):
         return transforms.functional.rotate(img, -90).transpose(Image.FLIP_LEFT_RIGHT)
 
 
-def get_test_samples(name='MNIST', corruption=None, level=0.0, classes=[1,2,3,4,5,6,7,8,9], random=False, plot=False):
+def get_test_samples(name='MNIST', corruption=None, level=0.0, classes=[1,2,3,4,5,6,7,8,9], random=False, plot=False, cmap='gray'):
     data = load_nist_data(name=name, corruption=corruption, level=level)
     dataloader = DataLoader(data, batch_size=20*len(classes), shuffle=False)
     images, labels = next(iter(dataloader))
@@ -105,16 +106,18 @@ def get_test_samples(name='MNIST', corruption=None, level=0.0, classes=[1,2,3,4,
     sample = sample.unsqueeze(1)
     if plot:
         title='level={}'.format(level) if corruption is not None else ''
-        mnist_grid(sample, title=title, xlabel=name + ' + ' + corruption, num_img=9, nrow=3, figsize=(1.5,1.5))
+        label= name + ' + ' + corruption if corruption is not None else name
+        mnist_grid(sample, title=title, xlabel=label, num_img=9, nrow=3, cmap=cmap, figsize=(1.5,1.5))
     return sample
 
 
 #...Image Corruption Functions:
 
-def apply_noise(tensor, mean=0., std=1.):
+def apply_noise(tensor, std=1.):
     """Adds Gaussian noise to a tensor."""
-    noise = torch.randn(tensor.size()) * std + mean
-    return tensor + noise
+    noise = torch.randn(tensor.size(), dtype=tensor.dtype, device=tensor.device) * std
+    tensor = tensor + noise
+    return torch.clamp(tensor, 0, 1)
 
 def apply_blackout(tensor, fraction=0.1):
     """
