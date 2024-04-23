@@ -26,7 +26,7 @@ As can be seen below, the FLD values of the three fully-connected layers (third 
 
 From here one sees that a good metric for MNIST digits is the averaged features over the first two fully connected layers:
 
-\[
+$$
 FLD(\rm MNIST) = \frac{FLD_1+FLD_2}{2}
-\]
+$$
 
