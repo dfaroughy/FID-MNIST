@@ -7,7 +7,7 @@ architecture with a classifier better suited for MNIST-like images.
 Our experiments demonstrate that a slightly modified [`LeNet-5`](http://yann.lecun.com/exdb/publis/pdf/lecun-95b.pdf) architecture, with classification accuracy of $99.5$% for MNIST digits, 
 leads to a good similarity metric that correlates well with human judgement. We define the *Fréchet LeNet Distance* (FLD) as the Frechet distance between hidden features of the last layers of a pre-trained LeNet classifier evaluated on target and reference datasets.
 
-We find that the FLD values of each fully-connected layers increases monotonically as more corruption is introduced to the images. This trend is consistent across various distortions:
+We find that the FLD values of the three fully-connected layers increases monotonically as more corruption is introduced to the images. This trend is consistent across various distortions:
 
 - Gaussian noise, 
 - Gaussian blur, 
@@ -23,9 +23,4 @@ We find that the FLD values of each fully-connected layers increases monotonical
 ![Fréchet Distance Distortions](/plots/Pixelize_MNIST_plot.png)
 ![Fréchet Distance Distortions](/plots/Crop_MNIST_plot.png)
 
-From here one sees that a good metric for MNIST digits is the averaged features over the first two fully connected layers:
-
-$$
-FLD(\rm MNIST) = \frac{FLD_1+FLD_2}{2}
-$$
 
