@@ -16,12 +16,12 @@ We find that the FLD values of each fully-connected layers increases monotonical
 - pixelization,
 - rectangular cropping.
 
-![Fréchet Distance Distortions](/plots/Noise_combined_plot.png)
-![Fréchet Distance Distortions](/plots/Blur_combined_plot.png)
-![Fréchet Distance Distortions](/plots/Blackout_combined_plot.png)
-![Fréchet Distance Distortions](/plots/Swirl_combined_plot.png)
-![Fréchet Distance Distortions](/plots/Pixelize_combined_plot.png)
-![Fréchet Distance Distortions](/plots/Crop_combined_plot.png)
+![Fréchet Distance Distortions](/plots/Noise_MNIST_plot.png)
+![Fréchet Distance Distortions](/plots/Blur_MNIST_plot.png)
+![Fréchet Distance Distortions](/plots/Blackout_MNIST_plot.png)
+![Fréchet Distance Distortions](/plots/Swirl_MNIST_plot.png)
+![Fréchet Distance Distortions](/plots/Pixelize_MNIST_plot.png)
+![Fréchet Distance Distortions](/plots/Crop_MNIST_plot.png)
 
 From here one sees that a good metric for MNIST digits is the averaged features over the first two fully connected layers:
 
