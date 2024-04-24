@@ -25,12 +25,13 @@ def train_classifier(model,
 
     model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
+    # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)  
     loss_fn = nn.CrossEntropyLoss()
     max_accuracy = 0
     patience = 0
 
     for epoch in tqdm.tqdm(range(1, max_epochs), desc="Epochs"):
-
+        model.train()
         for (data, target) in train_dataloader:
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
@@ -39,6 +40,8 @@ def train_classifier(model,
             loss.backward()
             optimizer.step()
 
+        # scheduler.step()
+        model.eval()
         accuracy = get_model_accuracy(model, device, test_dataloader)
 
         if accuracy > max_accuracy:
@@ -77,37 +80,6 @@ def get_model_accuracy(model, device, test_dataloader):
     return accuracy
 
 #...plotting funcs
-
-def plot_uncolor_images(images, title,  cmap="gray", figsize=(4, 4)):
-    _, axes = plt.subplots(8, 8, figsize=figsize)
-    axes = axes.flatten()
-    for i, ax in enumerate(axes):
-        ax.imshow(images[i].squeeze(), cmap=cmap)
-        ax.axis('off')
-    plt.suptitle(title)
-    plt.show()
-
-def plot_color_images(images, title, figsize=(4, 4)):
-    fig, axes = plt.subplots(8, 8, figsize=figsize)
-    axes = axes.flatten()
-    for i, ax in enumerate(axes):
-        img = images[i].permute(1, 2, 0)
-        ax.imshow(img)
-        ax.axis('off')
-    plt.suptitle(title)
-    plt.show()
-
-def plot_images(images, title, figsize=(4, 4), cmap=None):
-    fig, axes = plt.subplots(8, 8, figsize=figsize)
-    axes = axes.flatten()
-    for i, ax in enumerate(axes):
-        img = images[i].permute(1, 2, 0)
-        img = img.squeeze()  # Squeeze the last dimension if it's 1
-        if cmap is not None: ax.imshow(img, cmap=cmap)
-        else: ax.imshow(img)
-        ax.axis('off')
-    plt.suptitle(title)
-    plt.show()
 
 def mnist_grid(sample, title=None, xlabel=None, num_img=5, nrow=8, figsize=(10,10), save=False, cmap=plt.cm.gray):
     _, ax= plt.subplots(1,1, figsize=figsize)
@@ -177,54 +149,3 @@ def plot_combined_with_mnist_grid(samples, fcd, distortion, dist_levels, name='M
     plt.tight_layout()
     plt.savefig(distortion + '_combined_plot.png', bbox_inches='tight', dpi=500)
     plt.show()
-
-
-#...Sample diversity and contamination
-
-def sample_diversity(images, labels, diversity=0.0):
-    import random
-    if diversity > 1.0: diversity = 1.0
-    images_replicated, labels_replicated=[], []
-    for i in range(10):
-        img, lbl = images[labels==i], labels[labels==i]
-        N = img.shape[0]
-        M = int((diversity) * N)
-        # print('digit={}, N={}, M={}'.format(i, N, M))
-        if M == 0: M=1
-        j = random.sample(range(0, N), M)
-        img_sub, lbl_sub = img[j], lbl[j]
-        k = torch.randint(low=0, high=M, size=(N,))
-        images_replicated.append(img_sub[k])
-        labels_replicated.append(lbl_sub[k])
-
-    images_replicated = torch.cat(images_replicated, dim=0)
-    labels_replicated = torch.cat(labels_replicated, dim=0)
-    idx = torch.randperm(images_replicated.size(0))
-    images_replicated = images_replicated[idx]
-    labels_replicated = labels_replicated[idx]
-    
-    return images_replicated, labels_replicated
-
-
-def contaminate_sample(images, labels, diversity=0.0):
-    import random
-    if diversity > 1.0: diversity = 1.0
-    images_replicated, labels_replicated=[], []
-    for i in range(10):
-        img, lbl = images[labels==i], labels[labels==i]
-        N = img.shape[0]
-        M = int((diversity) * N)
-        if M == 0: M=1
-        j = random.sample(range(0, N), M)
-        img_sub, lbl_sub = img[j], lbl[j]
-        k = torch.randint(low=0, high=M, size=(N,))
-        images_replicated.append(img_sub[k])
-        labels_replicated.append(lbl_sub[k])
-
-    images_replicated = torch.cat(images_replicated, dim=0)
-    labels_replicated = torch.cat(labels_replicated, dim=0)
-    idx = torch.randperm(images_replicated.size(0))
-    images_replicated = images_replicated[idx]
-    labels_replicated = labels_replicated[idx]
-    
-    return images_replicated, labels_replicated

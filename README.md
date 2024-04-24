@@ -4,11 +4,10 @@ To effectively evaluate generative models on the [MNIST dataset](http://yann.lec
 we propose a metric similar to the [Fréchet Inception Distance (FID)](https://arxiv.org/abs/1706.08500). This metric replaces the `InceptionNet-v3` 
 architecture with a classifier better suited for MNIST-like images.
 
-Our experiments demonstrate that a slightly modified
-[`LeNet-5`](http://yann.lecun.com/exdb/publis/pdf/lecun-95b.pdf) architecture, with classification accuracy above $99$% for MNIST digits, 
+Our experiments demonstrate that a slightly modified [`LeNet-5`](http://yann.lecun.com/exdb/publis/pdf/lecun-95b.pdf) architecture, with classification accuracy of $99.5$% for MNIST digits, 
 leads to a good similarity metric that correlates well with human judgement. We define the *Fréchet LeNet Distance* (FLD) as the Frechet distance between hidden features of the last layers of a pre-trained LeNet classifier evaluated on target and reference datasets.
 
-As can be seen below, the FLD values of the three fully-connected layers (third is the output before softmaxing) increases monotonically as more corruption is introduced to the images. This trend is consistent across various distortions:
+We find that the FLD values of each fully-connected layers increases monotonically as more corruption is introduced to the images. This trend is consistent across various distortions:
 
 - Gaussian noise, 
 - Gaussian blur, 
