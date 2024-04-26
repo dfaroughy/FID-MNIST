@@ -30,11 +30,11 @@ class LeNet5(nn.Module):
 
 class LeNet(nn.Module):
     def __init__(self, 
-                 channels=32, 
-                 dim_hidden=(256, 128),
+                 channels=64, 
+                 dim_hidden=(128, 128),
                  dropout=(0.25, 0.1),
                  act_func=nn.ReLU(),
-                 use_batch_norm=False,
+                 use_batch_norm=True,
                  num_classes=10
                  ):
 
